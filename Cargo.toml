@@ -1,0 +1,49 @@
+[workspace]
+resolver = "3"
+members = [
+  "src/bin",
+]
+
+[workspace.dependencies]
+# bin = { path = "src/bin" }
+anyhow = "1.*"
+derive_more = { version = "2.*", features = ["display"] }
+dyn-clone = "1.*"
+itertools = "0.15.*"
+# iced = { git = "https://github.com/iced-rs/iced" }
+num-traits = "0.2.*"
+parking_lot = "0.12.*"
+tap = "1.*"
+tracing = "0.1.*"
+tracing-subscriber = "0.3.*"
+tracing-tracy = "0.11.*"
+polyfit = { version = "0.11.*", features = ["plotting"] }
+paste = "1.*"
+thiserror = "2.*"
+
+# Optimizes all dependencies OUTSIDE of the workspace with these two lines
+[profile.dev.package."*"]
+opt-level = 3
+
+# Slightly optimize the binary
+[profile.dev]
+opt-level = 1
+
+# Enable more optimization in the release profile at the cost of compile time.
+[profile.release]
+# Compile the entire crate as one unit.
+# Slows compile times, marginal improvements.
+codegen-units = 1
+# Do a second optimization pass over the entire program, including dependencies.
+# Slows compile times, marginal improvements.
+lto = "thin"
+
+# Optimize for size in the wasm-release profile to reduce load times and bandwidth usage on web.
+[profile.wasm-release]
+# Default to release profile values.
+inherits = "release"
+# Optimize with size in mind (also try "z", sometimes it is better).
+# Slightly slows compile times, great improvements to file size and runtime performance.
+opt-level = "s"
+# Strip all debugging information from the binary to slightly reduce file size.
+strip = "debuginfo"
