@@ -1,6 +1,8 @@
 #[allow(unused_imports)]
 mod prelude;
 
+use std::time::Duration;
+
 use rdev::{Event, EventType};
 
 use crate::{listener::listener_thread, prelude::*};
@@ -12,15 +14,16 @@ fn main() {
 
   std::thread::spawn(move || listener_thread(event_sender, false));
 
+  let mut received_events = Vec::new();
   loop {
-    let event = event_receiver.recv().unwrap();
+    std::thread::sleep(Duration::from_millis(2000));
 
-    if let Event {
-      event_type: EventType::KeyPress(key_press),
-      ..
-    } = event
-    {
-      println!("{:?}", key_press);
+    if !event_receiver.is_empty() {
+      event_receiver.drain_into(&mut received_events).unwrap();
+
+      println!("{:?}", received_events);
+
+      received_events.clear();
     }
   }
 }
