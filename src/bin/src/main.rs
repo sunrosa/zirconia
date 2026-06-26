@@ -10,7 +10,7 @@ mod listener;
 fn main() {
   let (event_sender, event_receiver) = kanal::unbounded::<Event>();
 
-  std::thread::spawn(move || listener_thread(event_sender));
+  std::thread::spawn(move || listener_thread(event_sender, false));
 
   loop {
     let event = event_receiver.recv().unwrap();
