@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 mod prelude;
 
-use rdev::Event;
+use rdev::{Event, EventType};
 
 use crate::{listener::listener_thread, prelude::*};
 
@@ -13,7 +13,14 @@ fn main() {
   std::thread::spawn(move || listener_thread(event_sender));
 
   loop {
-    let event = event_receiver.recv();
-    println!("{:?}", event);
+    let event = event_receiver.recv().unwrap();
+
+    if let Event {
+      event_type: EventType::KeyPress(key_press),
+      ..
+    } = event
+    {
+      println!("{:?}", key_press);
+    }
   }
 }
