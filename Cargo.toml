@@ -6,11 +6,13 @@ members = [
 
 [workspace.dependencies]
 # bin = { path = "src/bin" }
+# iced = { git = "https://github.com/iced-rs/iced" }
+rdev = { git = "https://github.com/rustdesk-org/rdev" }
+# enigo = "0.6.*"
 anyhow = "1.*"
 derive_more = { version = "2.*", features = ["display"] }
 dyn-clone = "1.*"
 itertools = "0.15.*"
-# iced = { git = "https://github.com/iced-rs/iced" }
 num-traits = "0.2.*"
 parking_lot = "0.12.*"
 tap = "1.*"
