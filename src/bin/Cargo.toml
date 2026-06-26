@@ -4,4 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+kanal.workspace = true
 rdev.workspace = true
+tracing = { workspace = true, features = ["max_level_trace", "release_max_level_info"] }

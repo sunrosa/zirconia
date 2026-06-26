@@ -1,14 +1,19 @@
-use rdev::{Event, EventType, listen};
+#[allow(unused_imports)]
+mod prelude;
+
+use rdev::Event;
+
+use crate::{listener::listener_thread, prelude::*};
+
+mod listener;
 
 fn main() {
-  // This will block.
-  if let Err(error) = listen(callback) {
-    println!("Error: {:?}", error)
-  }
-}
+  let (event_sender, event_receiver) = kanal::unbounded::<Event>();
 
-fn callback(event: Event) {
-  if let EventType::KeyPress(..) = event.event_type {
-    println!("My callback {:?}", event);
+  std::thread::spawn(move || listener_thread(event_sender));
+
+  loop {
+    let event = event_receiver.recv();
+    println!("{:?}", event);
   }
 }
