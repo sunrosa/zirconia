@@ -9,14 +9,18 @@ use iced::{
   widget::{column, row, text},
 };
 use rdev::Key;
+use x_win::WindowInfo;
 
 use crate::listener;
 
 pub struct App {
-  key_occurrences: HashMap<rdev::Key, u32>,
+  key_occurrences: HashMap<String, HashMap<rdev::Key, u32>>,
 }
 pub enum Message {
-  KeyboardEvents(HashMap<rdev::Key, u32>),
+  KeyboardEvents {
+    key_occurrences: HashMap<rdev::Key, u32>,
+    active_window: WindowInfo,
+  },
 }
 
 impl App {
@@ -24,7 +28,7 @@ impl App {
     let app = Self {
       key_occurrences: Default::default(),
     };
-    let task = Task::batch([listener::task(Duration::from_secs(10))]);
+    let task = Task::batch([listener::task(Duration::from_secs(2))]);
 
     (app, task)
   }
@@ -33,9 +37,17 @@ impl App {
     use Message::*;
 
     match message {
-      KeyboardEvents(occurrences) => {
-        for occurrence in occurrences {
-          *self.key_occurrences.entry(occurrence.0).or_default() += occurrence.1;
+      KeyboardEvents {
+        key_occurrences,
+        active_window,
+      } => {
+        for occurrence in key_occurrences {
+          *self
+            .key_occurrences
+            .entry(active_window.info.exec_name.clone())
+            .or_default()
+            .entry(occurrence.0)
+            .or_default() += occurrence.1;
         }
       }
     }

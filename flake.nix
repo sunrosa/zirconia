@@ -17,6 +17,7 @@
           libXi
           libXrandr
           libxkbcommon
+          libxcb
         ];
 
         # This makes the dynamically loaded libraries discoverable at runtime

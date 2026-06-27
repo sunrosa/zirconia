@@ -21,20 +21,26 @@ pub fn task(interval: Duration) -> Task<Message> {
     loop {
       tokio::time::sleep(interval).await;
 
-      let mut occurrences: HashMap<rdev::Key, u32> = HashMap::new();
+      let mut key_occurrences: HashMap<rdev::Key, u32> = HashMap::new();
 
       if !event_receiver.is_empty() {
         event_receiver.drain_into(&mut received_events).unwrap();
 
         for event in &received_events {
           if let EventType::KeyPress(key) = event.event_type {
-            *occurrences.entry(key).or_default() += 1;
+            *key_occurrences.entry(key).or_default() += 1;
           }
         }
 
         received_events.clear();
 
-        output.send(Message::KeyboardEvents(occurrences)).await.unwrap();
+        output
+          .send(Message::KeyboardEvents {
+            key_occurrences,
+            active_window: x_win::get_active_window().unwrap(),
+          })
+          .await
+          .unwrap();
       }
     }
   }))

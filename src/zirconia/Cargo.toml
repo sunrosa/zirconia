@@ -1,5 +1,5 @@
 [package]
-name = "bin"
+name = "zirconia"
 version = "0.1.0"
 edition = "2024"
 
@@ -9,3 +9,4 @@ kanal.workspace = true
 rdev.workspace = true
 tokio = { workspace = true, features = ["time"] }
 tracing = { workspace = true, features = ["max_level_trace", "release_max_level_info"] }
+x-win = { workspace = true, features = ["x11"] }
