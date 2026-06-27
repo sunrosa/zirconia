@@ -9,11 +9,14 @@ use std::{
 use chrono::{DateTime, Timelike, Utc};
 use iced::{
   Element, Length, Task,
+  futures::SinkExt,
   widget::{column, row, scrollable, text},
 };
 use rdev::Key;
 use serde::{Deserialize, Serialize};
 use x_win::WindowInfo;
+
+use tokio::io::AsyncWriteExt;
 
 use crate::listener;
 
@@ -40,6 +43,8 @@ pub enum Message {
     key_occurrences: HashMap<rdev::Key, u32>,
     active_window: WindowInfo,
   },
+  AutosaveNow,
+  CloseApp,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -50,10 +55,15 @@ pub struct AppPersistent {
 impl App {
   #[instrument(skip_all, level = Level::INFO)]
   pub fn boot() -> (Self, Task<Message>) {
-    let app = Self {
-      key_buckets: Default::default(),
+    let app = if let Ok(file) = std::fs::File::open("save.ron") {
+      App::from_persistent(ron::de::from_reader(file).unwrap())
+    } else {
+      Self {
+        key_buckets: Default::default(),
+      }
     };
-    let task = Task::batch([listener::task_run(Duration::from_secs(2))]);
+
+    let task = Task::batch([listener::task_run(Duration::from_secs(2)), autosave_signal()]);
 
     (app, task)
   }
@@ -90,6 +100,8 @@ impl App {
             .or_default() += occurrence.1;
         }
       }
+      AutosaveNow => return self.save(),
+      CloseApp => return self.close(),
     }
 
     Task::none()
@@ -103,17 +115,56 @@ impl App {
       formatted_text += &format!("{:?}\n", time_bucket.0);
 
       for program in time_bucket.1 {
-        formatted_text += &format!("  {:?}\n", program.0);
+        formatted_text += &format!("    {:?}\n", program.0);
 
         let mut sorted_keys: Vec<_> = program.1.into_iter().collect();
         sorted_keys.sort_by(|a, b| b.1.cmp(a.1));
 
         for key in sorted_keys {
-          formatted_text += &format!("    {:?}: {}\n", key.0, key.1);
+          formatted_text += &format!("        {:?}: {}\n", key.0, key.1);
         }
       }
     }
 
     scrollable(column![text(formatted_text)].width(Length::Fill)).into()
   }
+
+  #[instrument(skip_all, level = Level::DEBUG)]
+  fn save(&self) -> Task<Message> {
+    let to_save = self.as_persistent();
+
+    Task::future(async move {
+      debug!("saving app");
+
+      let mut writer = tokio::fs::OpenOptions::new()
+        .truncate(true)
+        .write(true)
+        .create(true)
+        .open("save.ron")
+        .await
+        .unwrap();
+
+      let buf = ron::ser::to_string(&to_save).unwrap();
+      writer.write_all(buf.as_bytes()).await.unwrap();
+    })
+    .discard()
+  }
+
+  #[instrument(skip_all, level = Level::INFO)]
+  fn close(&self) -> Task<Message> {
+    self.save().chain(iced::exit())
+  }
+}
+
+#[instrument(skip_all, level = Level::TRACE)]
+fn autosave_signal() -> Task<Message> {
+  Task::stream(iced::stream::channel(4, async move |mut output| {
+    let mut interval = tokio::time::interval(std::time::Duration::from_secs(30));
+    interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+
+    loop {
+      output.send(Message::AutosaveNow).await.unwrap();
+      interval.tick().await;
+    }
+  }))
 }
