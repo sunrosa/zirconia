@@ -1,3 +1,5 @@
+use crate::prelude::*;
+
 use std::{
   collections::{BTreeMap, HashMap, HashSet},
   sync::Arc,
@@ -25,6 +27,7 @@ pub enum Message {
 }
 
 impl App {
+#[instrument(skip_all, level = Level::INFO)]
   pub fn boot() -> (Self, Task<Message>) {
     let app = Self {
       key_buckets: Default::default(),
@@ -34,6 +37,7 @@ impl App {
     (app, task)
   }
 
+#[instrument(skip_all, level = Level::DEBUG)]
   pub fn update(&mut self, message: Message) -> Task<Message> {
     use Message::*;
 
@@ -70,6 +74,7 @@ impl App {
     Task::none()
   }
 
+#[instrument(skip_all, level = Level::DEBUG)]
   pub fn view<'a>(&'a self) -> Element<'a, Message> {
     let mut formatted_text = String::with_capacity(512);
 

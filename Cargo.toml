@@ -26,6 +26,7 @@ kanal = "0.1.*"
 tokio = "1.*"
 x-win = "5.*"
 chrono = "0.4.*"
+no_std_io2 = "0.9.*"
 
 # Optimizes all dependencies OUTSIDE of the workspace with these two lines
 [profile.dev.package."*"]

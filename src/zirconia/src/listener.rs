@@ -1,4 +1,4 @@
-use std::{collections::HashMap, hint::black_box, time::Duration};
+use std::{any::Any, collections::HashMap, hint::black_box, io::ErrorKind, time::Duration};
 
 use crate::{app::Message, prelude::*};
 
@@ -36,7 +36,22 @@ pub fn task_run(interval: Duration) -> Task<Message> {
 
         received_events.clear();
 
-        let active_window = x_win::get_active_window().unwrap();
+        let active_window = match x_win::get_active_window() {
+          Ok(o) => o,
+          Err(e) => {
+            if let Some(io_error) = e.downcast_ref::<no_std_io2::io::Error>() {
+              match io_error.kind() {
+                ErrorKind::PermissionDenied => {
+                  warn!("permission denied to access window: {io_error:?}");
+                  continue;
+                }
+                _ => panic!("{io_error:?}"),
+              }
+            } else {
+              panic!("{e:?}");
+            }
+          }
+        };
 
         output
           .send(Message::KeyboardEvents {
