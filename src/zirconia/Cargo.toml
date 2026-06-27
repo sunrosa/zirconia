@@ -4,13 +4,17 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-chrono.workspace = true
+chrono = { workspace = true, features = ["serde"] }
 iced = { version = "0.14.0", features = ["tokio", "x11"] }
 kanal.workspace = true
 no_std_io2.workspace = true
-rdev.workspace = true
+rdev = { workspace = true, features = ["serde", "serialize"] }
+serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["time"] }
-tracing = { workspace = true, features = ["max_level_trace", "release_max_level_info"] }
+tracing = { workspace = true, features = [
+  "max_level_trace",
+  "release_max_level_info",
+] }
 tracing-subscriber.workspace = true
 tracing-tracy.workspace = true
 x-win = { workspace = true, features = ["x11"] }

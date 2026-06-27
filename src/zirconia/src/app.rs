@@ -12,13 +12,29 @@ use iced::{
   widget::{column, row, scrollable, text},
 };
 use rdev::Key;
+use serde::{Deserialize, Serialize};
 use x_win::WindowInfo;
 
 use crate::listener;
 
+#[derive(Debug, Clone)]
 pub struct App {
   key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<String, HashMap<rdev::Key, u32>>>,
 }
+impl App {
+  fn as_persistent(&self) -> AppPersistent {
+    AppPersistent {
+      key_buckets: self.key_buckets.clone(),
+    }
+  }
+
+  fn from_persistent(persistent: AppPersistent) -> Self {
+    Self {
+      key_buckets: persistent.key_buckets,
+    }
+  }
+}
+
 pub enum Message {
   KeyboardEvents {
     key_occurrences: HashMap<rdev::Key, u32>,
@@ -26,8 +42,13 @@ pub enum Message {
   },
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppPersistent {
+  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<String, HashMap<rdev::Key, u32>>>,
+}
+
 impl App {
-#[instrument(skip_all, level = Level::INFO)]
+  #[instrument(skip_all, level = Level::INFO)]
   pub fn boot() -> (Self, Task<Message>) {
     let app = Self {
       key_buckets: Default::default(),
@@ -37,7 +58,7 @@ impl App {
     (app, task)
   }
 
-#[instrument(skip_all, level = Level::DEBUG)]
+  #[instrument(skip_all, level = Level::DEBUG)]
   pub fn update(&mut self, message: Message) -> Task<Message> {
     use Message::*;
 
@@ -74,7 +95,7 @@ impl App {
     Task::none()
   }
 
-#[instrument(skip_all, level = Level::DEBUG)]
+  #[instrument(skip_all, level = Level::DEBUG)]
   pub fn view<'a>(&'a self) -> Element<'a, Message> {
     let mut formatted_text = String::with_capacity(512);
 

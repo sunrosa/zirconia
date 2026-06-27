@@ -7,7 +7,7 @@ members = [
 [workspace.dependencies]
 # bin = { path = "src/bin" }
 # iced = { git = "https://github.com/iced-rs/iced" }
-rdev = { git = "https://github.com/rustdesk-org/rdev" }
+rdev = { path = "./deps/rdev" }
 # enigo = "0.6.*"
 anyhow = "1.*"
 derive_more = { version = "2.*", features = ["display"] }
@@ -27,6 +27,7 @@ tokio = "1.*"
 x-win = "5.*"
 chrono = "0.4.*"
 no_std_io2 = "0.9.*"
+serde = "*"
 
 # Optimizes all dependencies OUTSIDE of the workspace with these two lines
 [profile.dev.package."*"]
