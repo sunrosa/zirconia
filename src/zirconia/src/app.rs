@@ -6,8 +6,8 @@ use std::{
 
 use chrono::{DateTime, Timelike, Utc};
 use iced::{
-  Element, Task,
-  widget::{column, row, text},
+  Element, Length, Task,
+  widget::{column, row, scrollable, text},
 };
 use rdev::Key;
 use x_win::WindowInfo;
@@ -15,7 +15,7 @@ use x_win::WindowInfo;
 use crate::listener;
 
 pub struct App {
-  key_buckets: BTreeMap<DateTime<Utc>, HashMap<String, HashMap<rdev::Key, u32>>>,
+  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<String, HashMap<rdev::Key, u32>>>,
 }
 pub enum Message {
   KeyboardEvents {
@@ -67,6 +67,23 @@ impl App {
   }
 
   pub fn view<'a>(&'a self) -> Element<'a, Message> {
-    column![text!("{:?}", self.key_buckets)].into()
+    let mut formatted_text = String::with_capacity(512);
+
+    for time_bucket in &self.key_buckets {
+      formatted_text += &format!("{:?}\n", time_bucket.0);
+
+      for program in time_bucket.1 {
+        formatted_text += &format!("  {:?}\n", program.0);
+
+        let mut sorted_keys: Vec<_> = program.1.into_iter().collect();
+        sorted_keys.sort_by(|a, b| b.1.cmp(a.1));
+
+        for key in sorted_keys {
+          formatted_text += &format!("    {:?}: {}\n", key.0, key.1);
+        }
+      }
+    }
+
+    scrollable(column![text(formatted_text)].width(Length::Fill)).into()
   }
 }
