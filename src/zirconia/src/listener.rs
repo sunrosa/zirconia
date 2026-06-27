@@ -81,8 +81,15 @@ fn active_window() -> Option<x_win::WindowInfo> {
 #[instrument(skip_all, level = Level::TRACE)]
 fn listener_thread(event_sender: Sender<Event>) {
   let listening_result = listen(move |event: Event| {
+    // We are ignoring mouse movements with this condition
     if !matches!(event.event_type, EventType::MouseMove { .. }) {
-      event_sender.send(event).unwrap();
+      match event_sender.send(event) {
+        Ok(()) => {}
+        Err(e) => {
+          // If the channel has closed, there's nothing we can do from here to kill this thread. Just hope it gets closed by the OS since main has probably closed if the channel is closed.
+          warn!("event listener kanal channel was closed from the receiver: {e:?}")
+        }
+      }
     }
   });
 
