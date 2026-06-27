@@ -16,7 +16,6 @@
           libX11
           libXi
           libXrandr
-          # wayland
           libxkbcommon
         ];
 
