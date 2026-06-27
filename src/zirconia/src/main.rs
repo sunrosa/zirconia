@@ -21,6 +21,7 @@ fn main() {
 
 fn subscriptions(state: &App) -> Subscription<Message> {
   Subscription::batch([
-    window::close_requests().map(|_| Message::CloseApp)
+    window::close_requests().map(|_| Message::CloseApp),
+    window::close_events().map(|_| Message::CloseApp)
   ])
 }
