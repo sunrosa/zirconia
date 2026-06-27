@@ -1,9 +1,10 @@
 use std::{
-  collections::{HashMap, HashSet},
+  collections::{BTreeMap, HashMap, HashSet},
   sync::Arc,
   time::Duration,
 };
 
+use chrono::{DateTime, Timelike, Utc};
 use iced::{
   Element, Task,
   widget::{column, row, text},
@@ -14,7 +15,7 @@ use x_win::WindowInfo;
 use crate::listener;
 
 pub struct App {
-  key_occurrences: HashMap<String, HashMap<rdev::Key, u32>>,
+  key_buckets: BTreeMap<DateTime<Utc>, HashMap<String, HashMap<rdev::Key, u32>>>,
 }
 pub enum Message {
   KeyboardEvents {
@@ -26,7 +27,7 @@ pub enum Message {
 impl App {
   pub fn boot() -> (Self, Task<Message>) {
     let app = Self {
-      key_occurrences: Default::default(),
+      key_buckets: Default::default(),
     };
     let task = Task::batch([listener::task(Duration::from_secs(2))]);
 
@@ -41,9 +42,19 @@ impl App {
         key_occurrences,
         active_window,
       } => {
+        let time_now = chrono::Utc::now()
+          .with_minute(0)
+          .unwrap()
+          .with_second(0)
+          .unwrap()
+          .with_nanosecond(0)
+          .unwrap();
+
         for occurrence in key_occurrences {
           *self
-            .key_occurrences
+            .key_buckets
+            .entry(time_now)
+            .or_default()
             .entry(active_window.info.exec_name.clone())
             .or_default()
             .entry(occurrence.0)
@@ -56,6 +67,6 @@ impl App {
   }
 
   pub fn view<'a>(&'a self) -> Element<'a, Message> {
-    column![text!("{:?}", self.key_occurrences)].into()
+    column![text!("{:?}", self.key_buckets)].into()
   }
 }

@@ -14,7 +14,7 @@ pub fn task(interval: Duration) -> Task<Message> {
   Task::stream(stream::channel(8, async move |mut output| {
     let (event_sender, event_receiver) = kanal::unbounded::<Event>();
 
-    std::thread::spawn(move || listener_thread(event_sender));
+    tokio::task::spawn_blocking(move || listener_thread(event_sender));
 
     let mut received_events = Vec::with_capacity(64);
 
