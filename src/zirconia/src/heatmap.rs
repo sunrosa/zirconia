@@ -12,16 +12,41 @@ use crate::prelude::*;
 
 use iced::widget::{column, row};
 
+/// # TODO
+/// Because we're using [`Row::spacing`] instead of, for example, a container inside a container, the keys are bound to look slightly off, since the padding isn't included in my calculations for how wide the keys are.
 pub fn keyboard<'a>() -> Element<'a, Message> {
   use Length::*;
 
   responsive(|size| {
-    let aspect_ratio = 3.8 / 1.0;
+    let aspect_ratio = 2.8 / 1.0;
 
     let new_size = size.ratio(aspect_ratio);
 
     column![
       row![
+        // Total irrelevant
+        keycap("Esc", FillPortion(150)),
+        keycap("F1", FillPortion(100)),
+        keycap("F2", FillPortion(100)),
+        keycap("F3", FillPortion(100)),
+        keycap("F4", FillPortion(100)),
+        keycap("F5", FillPortion(100)),
+        keycap("F6", FillPortion(100)),
+        keycap("F7", FillPortion(100)),
+        keycap("F8", FillPortion(100)),
+        keycap("F9", FillPortion(100)),
+        keycap("F10", FillPortion(100)),
+        keycap("F11", FillPortion(100)),
+        keycap("F12", FillPortion(100)),
+        keycap("Home", FillPortion(100)),
+        keycap("End", FillPortion(100)),
+        keycap("Insert", FillPortion(100)),
+        keycap("Delete", FillPortion(150)),
+      ]
+      .spacing(2.)
+      .height(FillPortion(60)),
+      row![
+        // 1500 total
         keycap("`", FillPortion(100)),
         keycap("1", FillPortion(100)),
         keycap("2", FillPortion(100)),
@@ -40,6 +65,7 @@ pub fn keyboard<'a>() -> Element<'a, Message> {
       .spacing(2.)
       .height(FillPortion(100)),
       row![
+        // 1500 total
         keycap("Tab", FillPortion(150)),
         keycap("Q", FillPortion(100)),
         keycap("W", FillPortion(100)),
@@ -58,6 +84,7 @@ pub fn keyboard<'a>() -> Element<'a, Message> {
       .spacing(2.)
       .height(FillPortion(100)),
       row![
+        // 1500 total
         keycap("CapsLock", FillPortion(175)),
         keycap("A", FillPortion(100)),
         keycap("S", FillPortion(100)),
@@ -75,6 +102,7 @@ pub fn keyboard<'a>() -> Element<'a, Message> {
       .spacing(2.)
       .height(FillPortion(100)),
       row![
+        // 1500 total
         keycap("Shift", FillPortion(225)),
         keycap("Z", FillPortion(100)),
         keycap("X", FillPortion(100)),
@@ -87,6 +115,20 @@ pub fn keyboard<'a>() -> Element<'a, Message> {
         keycap(".", FillPortion(100)),
         keycap("/", FillPortion(100)),
         keycap("Shift", FillPortion(275)),
+      ]
+      .spacing(2.)
+      .height(FillPortion(100)),
+      row![
+        keycap("Ctrl", FillPortion(225)),
+        keycap("Meta", FillPortion(100)),
+        keycap("Alt", FillPortion(100)),
+        keycap("Space", FillPortion(503)),
+        keycap("Alt", FillPortion(100)),
+        keycap("Ctrl", FillPortion(100)),
+        keycap("←", FillPortion(93)),
+        keycap("↓", FillPortion(93)),
+        keycap("↑", FillPortion(93)),
+        keycap("→", FillPortion(93)),
       ]
       .spacing(2.)
       .height(FillPortion(100)),
