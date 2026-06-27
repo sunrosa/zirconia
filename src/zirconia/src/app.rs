@@ -29,7 +29,7 @@ impl App {
     let app = Self {
       key_buckets: Default::default(),
     };
-    let task = Task::batch([listener::task(Duration::from_secs(2))]);
+    let task = Task::batch([listener::task_run(Duration::from_secs(2))]);
 
     (app, task)
   }
@@ -55,7 +55,11 @@ impl App {
             .key_buckets
             .entry(time_now)
             .or_default()
-            .entry(active_window.info.exec_name.clone())
+            .entry(format!(
+              "{} - {}",
+              active_window.info.exec_name.clone(),
+              active_window.info.name.clone()
+            ))
             .or_default()
             .entry(occurrence.0)
             .or_default() += occurrence.1;
