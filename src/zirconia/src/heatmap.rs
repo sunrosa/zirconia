@@ -1,5 +1,5 @@
 use iced::{
-  Border, Element, Length,
+  Border, Element, Length, Padding,
   alignment::Vertical,
   widget::{
     Container, container,
@@ -12,8 +12,8 @@ use crate::prelude::*;
 
 use iced::widget::{column, row};
 
-/// # TODO
-/// Because we're using [`Row::spacing`] instead of, for example, a container inside a container, the keys are bound to look slightly off, since the padding isn't included in my calculations for how wide the keys are.
+static KEY_SPACING: f32 = 2.;
+
 pub fn keyboard<'a>() -> Element<'a, Message> {
   use Length::*;
 
@@ -43,7 +43,6 @@ pub fn keyboard<'a>() -> Element<'a, Message> {
         keycap("Insert", FillPortion(100)),
         keycap("Delete", FillPortion(150)),
       ]
-      .spacing(2.)
       .height(FillPortion(60)),
       row![
         // 1500 total
@@ -62,7 +61,6 @@ pub fn keyboard<'a>() -> Element<'a, Message> {
         keycap("=", FillPortion(100)),
         keycap("Backspace", FillPortion(200)),
       ]
-      .spacing(2.)
       .height(FillPortion(100)),
       row![
         // 1500 total
@@ -81,7 +79,6 @@ pub fn keyboard<'a>() -> Element<'a, Message> {
         keycap("]", FillPortion(100)),
         keycap("\\", FillPortion(150)),
       ]
-      .spacing(2.)
       .height(FillPortion(100)),
       row![
         // 1500 total
@@ -99,7 +96,6 @@ pub fn keyboard<'a>() -> Element<'a, Message> {
         keycap("'", FillPortion(100)),
         keycap("Enter", FillPortion(225)),
       ]
-      .spacing(2.)
       .height(FillPortion(100)),
       row![
         // 1500 total
@@ -116,7 +112,6 @@ pub fn keyboard<'a>() -> Element<'a, Message> {
         keycap("/", FillPortion(100)),
         keycap("Shift", FillPortion(275)),
       ]
-      .spacing(2.)
       .height(FillPortion(100)),
       row![
         keycap("Ctrl", FillPortion(225)),
@@ -130,37 +125,44 @@ pub fn keyboard<'a>() -> Element<'a, Message> {
         keycap("↑", FillPortion(93)),
         keycap("→", FillPortion(93)),
       ]
-      .spacing(2.)
       .height(FillPortion(100)),
     ]
     .width(Fixed(new_size.width))
     .height(Fixed(new_size.height))
-    .spacing(2.)
+    .spacing(KEY_SPACING)
   })
   .into()
 }
 
 fn keycap<'a>(label: &'a str, width: Length) -> Container<'a, Message> {
+  // The reason we have a container inside a container is so we can use PADDING instead of row spacing, which occurs on the *inside*. That means the key sizes are exact, and rows with more keys don't desync with rows with less keys.
   container(
-    text(label)
-      .align_x(text::Alignment::Center)
-      .align_y(Vertical::Center)
-      .width(Length::Fill)
-      .height(Length::Fill),
+    container(
+      text(label)
+        .align_x(text::Alignment::Center)
+        .align_y(Vertical::Center)
+        .width(Length::Fill)
+        .height(Length::Fill),
+    )
+    .style(move |theme| {
+      let default_style = container::rounded_box(theme);
+      container::Style {
+        border: Border {
+          width: 3.,
+          radius: 5.0.into(),
+          ..default_style.border
+        },
+        // background: Some(Background::Color(Color { a: 0.1, ..text_color })),
+        ..default_style
+      }
+    }),
   )
-  .style(move |theme| {
-    let default_style = container::rounded_box(theme);
-    container::Style {
-      border: Border {
-        width: 3.,
-        radius: 5.0.into(),
-        ..default_style.border
-      },
-      // background: Some(Background::Color(Color { a: 0.1, ..text_color })),
-      ..default_style
-    }
-  })
   .width(width)
   .height(Length::Fill)
+  .padding(Padding {
+    left: KEY_SPACING / 2.,
+    right: KEY_SPACING / 2.,
+    ..Default::default()
+  })
   .into()
 }

@@ -35,8 +35,8 @@ ron = "*"
 opt-level = 3
 
 # Slightly optimize the binary
-[profile.dev]
-opt-level = 1
+# [profile.dev]
+# opt-level = 1
 
 # Enable more optimization in the release profile at the cost of compile time.
 [profile.release]
