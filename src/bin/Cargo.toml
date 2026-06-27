@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-iced = "0.14.0"
+iced = { version = "0.14.0", features = ["x11"] }
 kanal.workspace = true
 rdev.workspace = true
+tokio = { workspace = true, features = ["time"] }
 tracing = { workspace = true, features = ["max_level_trace", "release_max_level_info"] }
