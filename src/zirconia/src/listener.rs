@@ -13,18 +13,23 @@ use tokio::time::{self, sleep};
 /// - `interval`: The time between each message containing the latest keystrokes
 #[instrument(skip_all, level = Level::DEBUG)]
 pub fn task_run(interval: Duration) -> Task<Message> {
+  // The outer channel (stream channel) only sends messages at [`interval`], to keep the UI thread from updating every global keystroke.
   Task::stream(stream::channel(8, async move |mut output| {
+    // This inner channel (the kanal channel) receives messages for EVERY key event.
     let (event_sender, event_receiver) = kanal::unbounded::<Event>();
 
+    // The listener sends messages from a blocking thread, as rdev doesn't have an asynchronous API.
     tokio::task::spawn_blocking(move || listener_thread(event_sender));
 
     let mut received_events = Vec::with_capacity(64);
 
     loop {
+      // If you aren't receiving lints in this entire function, update rust-analyzer and it will work again. It's because the line below causes this block to become an actual async closure.
       time::sleep(interval).await;
 
       let mut key_occurrences: HashMap<rdev::Key, u32> = HashMap::new();
 
+      // No events are sent up to the UI unless new events are present.
       if !event_receiver.is_empty() {
         event_receiver.drain_into(&mut received_events).unwrap();
 
@@ -87,7 +92,7 @@ fn listener_thread(event_sender: Sender<Event>) {
         Ok(()) => {}
         Err(e) => {
           // If the channel has closed, there's nothing we can do from here to kill this thread. Just hope it gets closed by the OS since main has probably closed if the channel is closed.
-          warn!("event listener kanal channel was closed from the receiver: {e:?}")
+          warn!("high-frequency key event receiver has hung up (main thread probably closed): {e:?}")
         }
       }
     }

@@ -128,7 +128,7 @@ impl App {
 
     // scrollable(column![text(formatted_text)].width(Length::Fill)).into()
 
-    keyboard()
+    keyboard(&HashMap::new())
   }
 
   #[instrument(skip_all, level = Level::DEBUG)]
