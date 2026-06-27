@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 chrono = { workspace = true, features = ["serde"] }
-iced = { version = "0.14.0", features = ["tokio", "x11"] }
+iced = { workspace = true, features = ["tokio", "x11"] }
 kanal.workspace = true
 no_std_io2.workspace = true
 rdev = { workspace = true, features = ["serde", "serialize"] }

@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{heatmap::keyboard, prelude::*};
 
 use std::{
   collections::{BTreeMap, HashMap, HashSet},
@@ -8,7 +8,7 @@ use std::{
 
 use chrono::{DateTime, Timelike, Utc};
 use iced::{
-  Element, Length, Task,
+  Element, Length, Size, Task,
   futures::SinkExt,
   widget::{column, row, scrollable, text},
 };
@@ -63,7 +63,7 @@ impl App {
       }
     };
 
-    let task = Task::batch([listener::task_run(Duration::from_secs(2)), autosave_signal()]);
+    let task = Task::batch([listener::task_run(Duration::from_secs(1)), autosave_signal()]);
 
     (app, task)
   }
@@ -109,24 +109,26 @@ impl App {
 
   #[instrument(skip_all, level = Level::DEBUG)]
   pub fn view<'a>(&'a self) -> Element<'a, Message> {
-    let mut formatted_text = String::with_capacity(512);
+    // let mut formatted_text = String::with_capacity(512);
 
-    for time_bucket in &self.key_buckets {
-      formatted_text += &format!("{:?}\n", time_bucket.0);
+    // for time_bucket in &self.key_buckets {
+    //   formatted_text += &format!("{:?}\n", time_bucket.0);
 
-      for program in time_bucket.1 {
-        formatted_text += &format!("    {:?}\n", program.0);
+    //   for program in time_bucket.1 {
+    //     formatted_text += &format!("    {:?}\n", program.0);
 
-        let mut sorted_keys: Vec<_> = program.1.into_iter().collect();
-        sorted_keys.sort_by(|a, b| b.1.cmp(a.1));
+    //     let mut sorted_keys: Vec<_> = program.1.into_iter().collect();
+    //     sorted_keys.sort_by(|a, b| b.1.cmp(a.1));
 
-        for key in sorted_keys {
-          formatted_text += &format!("        {:?}: {}\n", key.0, key.1);
-        }
-      }
-    }
+    //     for key in sorted_keys {
+    //       formatted_text += &format!("        {:?}: {}\n", key.0, key.1);
+    //     }
+    //   }
+    // }
 
-    scrollable(column![text(formatted_text)].width(Length::Fill)).into()
+    // scrollable(column![text(formatted_text)].width(Length::Fill)).into()
+
+    keyboard()
   }
 
   #[instrument(skip_all, level = Level::DEBUG)]

@@ -6,7 +6,7 @@ members = [
 
 [workspace.dependencies]
 # bin = { path = "src/bin" }
-# iced = { git = "https://github.com/iced-rs/iced" }
+iced = { git = "https://github.com/iced-rs/iced.git" }
 rdev = { path = "./deps/rdev" }
 # enigo = "0.6.*"
 anyhow = "1.*"

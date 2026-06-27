@@ -1,4 +1,4 @@
-use std::{any::Any, collections::HashMap, hint::black_box, io::ErrorKind, time::Duration};
+use std::{any::Any, collections::HashMap, hint::black_box, io::ErrorKind, ops::ControlFlow, time::Duration};
 
 use crate::{app::Message, prelude::*};
 
@@ -36,21 +36,9 @@ pub fn task_run(interval: Duration) -> Task<Message> {
 
         received_events.clear();
 
-        let active_window = match x_win::get_active_window() {
-          Ok(o) => o,
-          Err(e) => {
-            if let Some(io_error) = e.downcast_ref::<no_std_io2::io::Error>() {
-              match io_error.kind() {
-                ErrorKind::PermissionDenied => {
-                  warn!("permission denied to access window: {io_error:?}");
-                  continue;
-                }
-                _ => panic!("{io_error:?}"),
-              }
-            } else {
-              panic!("{e:?}");
-            }
-          }
+        let active_window = match active_window() {
+          Some(value) => value,
+          None => continue,
         };
 
         output
@@ -63,6 +51,31 @@ pub fn task_run(interval: Duration) -> Task<Message> {
       }
     }
   }))
+}
+
+/// If [`None`] is returned, the error was insignificant/recoverable (like permission denied to access window).
+///
+/// # Panics
+/// If the error is unrecoverable, it **panics**.
+#[inline]
+#[instrument(skip_all, level = Level::TRACE)]
+fn active_window() -> Option<x_win::WindowInfo> {
+  Some(match x_win::get_active_window() {
+    Ok(o) => o,
+    Err(e) => {
+      if let Some(io_error) = e.downcast_ref::<no_std_io2::io::Error>() {
+        match io_error.kind() {
+          ErrorKind::PermissionDenied => {
+            warn!("permission denied to access window: {io_error:?}");
+            return None;
+          }
+          _ => panic!("{io_error:?}"),
+        }
+      } else {
+        panic!("{e:?}");
+      }
+    }
+  })
 }
 
 #[instrument(skip_all, level = Level::TRACE)]
