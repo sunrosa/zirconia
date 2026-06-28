@@ -118,6 +118,7 @@ impl App {
 
   #[instrument(skip_all, level = Level::DEBUG)]
   pub fn view<'a>(&'a self) -> Element<'a, Message> {
+    // A collection of all keypresses across all time buckets and programs
     let mut keypresses = HashMap::new();
 
     let mut formatted_text = String::with_capacity(512);
@@ -138,9 +139,8 @@ impl App {
       }
     }
 
-    // FIXME alignment isn't working. I think the responsive needs to be moved outside the container or some shit. I'm tired good night.
     column![
-      container(keyboard(&keypresses).height(Length::Fill).width(Length::Fill))
+      container(keyboard(&keypresses).height(Length::Fill).width(Length::Shrink))
         .center_x(Length::Fill)
         .height(Length::FillPortion(100)),
       scrollable(text(formatted_text))
