@@ -1,6 +1,5 @@
 //! # TODO
 //! - The scrollable is quite laggy when drawing the heatmap and scrolling. I profiled it, and it's mostly empty space (nothing running), so I don't know what's going on
-//! - Comet is installed I think, but doesn't open when I press F12.
 //!
 //! ## Integration
 //! - Integrate with wakapi
@@ -23,8 +22,8 @@ mod listener;
 
 #[instrument(skip_all, level = Level::INFO)]
 fn main() {
-  tracing::subscriber::set_global_default(tracing_subscriber::registry().with(tracing_tracy::TracyLayer::default()))
-    .expect("setting up tracy layer");
+  // tracing::subscriber::set_global_default(tracing_subscriber::registry().with(tracing_tracy::TracyLayer::default()))
+  //   .expect("setting up tracy layer");
 
   iced::application(App::boot, App::update, App::view)
     .subscription(subscriptions)
