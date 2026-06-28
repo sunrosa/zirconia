@@ -4,6 +4,7 @@
 //! ## Integration
 //! - Integrate with wakapi
 //! - Integrate with MIDI keyboards
+//! - Integrate with system keyboard layout detection, to record how users type in different languages and layouts
 
 #![allow(unused_imports, dead_code)]
 
@@ -19,6 +20,7 @@ use crate::app::{App, Message};
 mod app;
 mod heatmap;
 mod listener;
+mod math;
 
 #[instrument(skip_all, level = Level::INFO)]
 fn main() {
@@ -42,7 +44,7 @@ fn main() {
   // BUG Nevermind it doesn't work.
   std::process::exit(0);
 
-  // If that doesn't fucking work (it doesn't on linux), just abort it.
+  // If that doesn't fucking work (it doesn't on linux), just abort it. It's possible rdev is spawning child processes on linux (though `pgrep -P` says no).
   #[allow(unreachable_code)] // Even the lint is wrong.
   std::process::abort();
 }

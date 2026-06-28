@@ -21,3 +21,6 @@ tracing-subscriber.workspace = true
 tracing-tracy.workspace = true
 x-win = { workspace = true, features = ["x11"] }
 tracing-log.workspace = true
+palette.workspace = true
+libm.workspace = true
+num-traits.workspace = true

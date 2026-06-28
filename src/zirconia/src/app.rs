@@ -142,10 +142,10 @@ impl App {
     column![
       container(keyboard(&keypresses).height(Length::Fill).width(Length::Shrink))
         .center_x(Length::Fill)
-        .height(Length::FillPortion(100)),
+        .height(Length::Shrink),
       scrollable(text(formatted_text))
-        .height(Length::FillPortion(100))
-        .width(Length::Fill)
+        .height(Length::Fill)
+        .width(Length::Fill),
     ]
     .height(Length::Fill)
     .width(Length::Fill)

@@ -4,11 +4,13 @@ use iced::{
   Background, Border, Color, Element, Length, Padding,
   alignment::Vertical,
   widget::{
-    Container, Responsive, container, grid::{self, Sizing}, responsive, text
+    Container, Responsive, container,
+    grid::{self, Sizing},
+    responsive, text,
   },
 };
 
-use crate::prelude::*;
+use crate::{math::sigmoid, prelude::*};
 
 use iced::widget::{column, row};
 
@@ -543,7 +545,18 @@ pub fn keyboard<'a>(key_data: &'_ HashMap<rdev::Key, u32>) -> Responsive<'a, Mes
 #[instrument(skip_all, level = Level::TRACE)]
 fn keycap<'a>(label: &'a str, width: Length, times_pressed: u32, total_pressed: u32) -> Container<'a, Message> {
   let press_percentage = times_pressed as f32 / total_pressed as f32;
-  let heatmap_significance = press_percentage * 50.;
+
+  // From 0 to 1
+  // WARN The number of keys matters here. If more keys are added, this needs to be updated
+  let hotness = sigmoid(press_percentage * 100. - 1.8);
+
+  // TODO use theming here, and use oklab via the palette crate.
+  let background_color = Color {
+    a: 1.,
+    r: hotness * 0.8 + 0.2,
+    g: (hotness / 8.) * 0.8 + 0.2,
+    b: (hotness / 3.) * 0.8 + 0.2,
+  };
 
   // The reason we have a container inside a container is so we can use PADDING instead of row spacing, which occurs on the *inside*. That means the key sizes are exact, and rows with more keys don't desync with rows with less keys.
   container(
@@ -567,12 +580,7 @@ fn keycap<'a>(label: &'a str, width: Length, times_pressed: u32, total_pressed: 
           radius: 5.0.into(),
           ..default_style.border
         },
-        background: Some(Background::Color(Color {
-          a: 1.,
-          r: heatmap_significance.max(0.).min(1.),
-          g: 0.3,
-          b: 0.3,
-        })),
+        background: Some(Background::Color(background_color)),
         ..default_style
       }
     }),

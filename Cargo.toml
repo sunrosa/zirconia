@@ -31,6 +31,8 @@ no_std_io2 = "0.9.*"
 serde = "*"
 ron = "*"
 tracing-log = "*"
+palette = "*"
+libm = "*"
 
 # Optimizes all dependencies OUTSIDE of the workspace with these two lines
 [profile.dev.package."*"]
