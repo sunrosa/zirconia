@@ -12,6 +12,7 @@ use iced::{
   futures::SinkExt,
   widget::{column, row, scrollable, text},
 };
+use kanal::{Receiver, Sender};
 use rdev::Key;
 use serde::{Deserialize, Serialize};
 use x_win::WindowInfo;
@@ -23,7 +24,6 @@ use crate::listener;
 #[derive(Debug)]
 pub struct App {
   key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<String, HashMap<rdev::Key, u32>>>,
-  listener_handle: Option<JoinHandle<()>>,
 }
 impl App {
   fn as_persistent(&self) -> AppPersistent {
@@ -35,7 +35,6 @@ impl App {
   fn from_persistent(persistent: AppPersistent) -> Self {
     Self {
       key_buckets: persistent.key_buckets,
-      listener_handle: None,
     }
   }
 }
@@ -44,7 +43,6 @@ impl Default for App {
   fn default() -> Self {
     Self {
       key_buckets: Default::default(),
-      listener_handle: Default::default(),
     }
   }
 }
@@ -73,9 +71,7 @@ impl App {
       Self::default()
     };
 
-    let (listener_task, listener_handle) = listener::task_run(Duration::from_secs(1));
-
-    let task = Task::batch([listener_task, autosave_signal()]);
+    let task = Task::batch([listener::task_run(Duration::from_secs(1)), autosave_signal()]);
 
     (app, task)
   }

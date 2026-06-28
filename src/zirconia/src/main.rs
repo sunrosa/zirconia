@@ -37,6 +37,14 @@ fn main() {
     .subscription(subscriptions)
     .run()
     .unwrap();
+
+  // In order to kill the fucking rdev::listen thread. This runs after the iced thread has already existed.
+  // BUG Nevermind it doesn't work.
+  std::process::exit(0);
+
+  // If that doesn't fucking work (it doesn't on linux), just abort it.
+  #[allow(unreachable_code)] // Even the lint is wrong.
+  std::process::abort();
 }
 
 #[instrument(skip_all, level = Level::TRACE)]
@@ -48,6 +56,7 @@ fn subscriptions(state: &App) -> Subscription<Message> {
     }),
     window::close_events().map(|id| {
       debug!("close event received for window of ID {id:?}");
-      Message::CloseApp}),
+      Message::CloseApp
+    }),
   ])
 }

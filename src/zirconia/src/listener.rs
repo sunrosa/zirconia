@@ -3,7 +3,7 @@ use std::{any::Any, collections::HashMap, hint::black_box, io::ErrorKind, ops::C
 use crate::{app::Message, prelude::*};
 
 use iced::{Task, futures::SinkExt, stream};
-use kanal::Sender;
+use kanal::{Receiver, Sender};
 use rdev::{Event, EventType, listen};
 use tokio::{
   task::JoinHandle,
@@ -15,13 +15,13 @@ use tokio::{
 /// # Parameters
 /// - `interval`: The time between each message containing the latest keystrokes
 #[instrument(skip_all, level = Level::DEBUG)]
-pub fn task_run(interval: Duration) -> (Task<Message>, JoinHandle<()>) {
+pub fn task_run(interval: Duration) -> Task<Message> {
   // This inner channel (the kanal channel) receives messages for EVERY key event.
   let (event_sender, event_receiver) = kanal::unbounded::<Event>();
 
   // The listener sends messages from a blocking thread, as rdev doesn't have an asynchronous API.
   debug!("spawning a blocking thread via tokio's threadpool to listen to key events");
-  let listener_handle = tokio::task::spawn_blocking(move || listener_thread(event_sender));
+  std::thread::spawn(move || listener_thread(event_sender));
 
   // The outer channel (stream channel) only sends messages at [`interval`], to keep the UI thread from updating every global keystroke.
   let task = Task::stream(stream::channel(8, async move |mut output| {
@@ -61,7 +61,7 @@ pub fn task_run(interval: Duration) -> (Task<Message>, JoinHandle<()>) {
     }
   }));
 
-  (task, listener_handle)
+  task
 }
 
 /// If [`None`] is returned, the error was insignificant/recoverable (like permission denied to access window).
