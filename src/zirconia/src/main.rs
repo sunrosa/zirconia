@@ -1,7 +1,6 @@
 //! # TODO
-//! ## UI
-//! - Make a keyboad heatmap
-//!   - It shouldn't be that hard. I'll just use a column of 6 rows and fill those with weighted-width squares, and with centered text, whose background I can color for heatmapping. See ISO 9995. If you pay close attention, the keyboard keys are positioned in left-to-right steps such that each key in the main area occupies a unique horizontal position, such that the typewriter levers under them could go "up" (toward the fn keys) and each have their own area. It goes QA2ZWS3X... horizontally, with each following key being more to the right than the previous.
+//! - The scrollable is quite laggy when drawing the heatmap and scrolling. I profiled it, and it's mostly empty space (nothing running), so I don't know what's going on
+//! - Comet is installed I think, but doesn't open when I press F12.
 //!
 //! ## Integration
 //! - Integrate with wakapi
@@ -24,8 +23,8 @@ mod listener;
 
 #[instrument(skip_all, level = Level::INFO)]
 fn main() {
-  // tracing::subsdriber::set_global_default(tracing_subscriber::registry().with(tracing_tracy::TracyLayer::default()))
-  //   .expect("setting up tracy layer");
+  tracing::subscriber::set_global_default(tracing_subscriber::registry().with(tracing_tracy::TracyLayer::default()))
+    .expect("setting up tracy layer");
 
   iced::application(App::boot, App::update, App::view)
     .subscription(subscriptions)

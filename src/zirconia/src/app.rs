@@ -38,6 +38,7 @@ impl App {
   }
 }
 
+#[derive(Debug, Clone)]
 pub enum Message {
   KeyboardEvents {
     key_occurrences: HashMap<rdev::Key, u32>,
@@ -109,26 +110,27 @@ impl App {
 
   #[instrument(skip_all, level = Level::DEBUG)]
   pub fn view<'a>(&'a self) -> Element<'a, Message> {
-    // let mut formatted_text = String::with_capacity(512);
+    let mut keypresses = HashMap::new();
 
-    // for time_bucket in &self.key_buckets {
-    //   formatted_text += &format!("{:?}\n", time_bucket.0);
+    let mut formatted_text = String::with_capacity(512);
+    for time_bucket in &self.key_buckets {
+      formatted_text += &format!("{:?}\n", time_bucket.0);
 
-    //   for program in time_bucket.1 {
-    //     formatted_text += &format!("    {:?}\n", program.0);
+      for program in time_bucket.1 {
+        formatted_text += &format!("    {:?}\n", program.0);
 
-    //     let mut sorted_keys: Vec<_> = program.1.into_iter().collect();
-    //     sorted_keys.sort_by(|a, b| b.1.cmp(a.1));
+        let mut sorted_keys: Vec<_> = program.1.into_iter().collect();
+        sorted_keys.sort_by(|a, b| b.1.cmp(a.1));
 
-    //     for key in sorted_keys {
-    //       formatted_text += &format!("        {:?}: {}\n", key.0, key.1);
-    //     }
-    //   }
-    // }
+        for key in sorted_keys {
+          formatted_text += &format!("        {:?}: {}\n", key.0, key.1);
 
-    // scrollable(column![text(formatted_text)].width(Length::Fill)).into()
+          *keypresses.entry(*key.0).or_default() += key.1;
+        }
+      }
+    }
 
-    keyboard(&HashMap::new())
+    scrollable(column![keyboard(&keypresses), text(formatted_text)].width(Length::Fill)).into()
   }
 
   #[instrument(skip_all, level = Level::DEBUG)]

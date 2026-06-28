@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+iced = { workspace = true, features = ["debug", "tokio", "x11", "time-travel"] }
+# iced_comet = { workspace = true }
 chrono = { workspace = true, features = ["serde"] }
-iced = { workspace = true, features = ["tokio", "x11"] }
 kanal.workspace = true
 no_std_io2.workspace = true
 rdev = { workspace = true, features = ["serde", "serialize"] }
