@@ -1,5 +1,7 @@
 //! # TODO
-//! - The scrollable is quite laggy when drawing the heatmap and scrolling. I profiled it, and it's mostly empty space (nothing running), so I don't know what's going on
+//! - Graphs over time
+//! - Network usage tracking
+//! - Mouse clicks and position tracking to make a heatmap of the screen (OFF BY DEFAULT. a lot of people won't like it, since it allows for fairly precise fingerprinting of what they're doing)
 //!
 //! ## Integration
 //! - Integrate with wakapi
@@ -18,7 +20,6 @@ use tracing_subscriber::layer::SubscriberExt;
 use crate::app::{App, Message};
 
 mod app;
-mod heatmap;
 mod listener;
 mod math;
 

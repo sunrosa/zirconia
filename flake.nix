@@ -18,7 +18,7 @@
           libXrandr
           libxkbcommon
           libxcb
-          vulkan-loader
+          vulkan-loader # Very important! Otherwise rendering still works, but presentation is slow as shit (>100ms).
         ];
 
         # This makes the dynamically loaded libraries discoverable at runtime

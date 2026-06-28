@@ -1,11 +1,5 @@
-use crate::{heatmap::keyboard, prelude::*};
-
-use std::{
-  collections::{BTreeMap, HashMap, HashSet},
-  sync::Arc,
-  time::Duration,
-};
-
+use crate::listener;
+use crate::{app::heatmap::keyboard, prelude::*};
 use chrono::{DateTime, Timelike, Utc};
 use iced::{
   Element, Length, Size, Task,
@@ -16,18 +10,34 @@ use iced::{
 use kanal::{Receiver, Sender};
 use rdev::Key;
 use serde::{Deserialize, Serialize};
+use std::{
+  collections::{BTreeMap, HashMap, HashSet},
+  sync::Arc,
+  time::Duration,
+};
+use tokio::{io::AsyncWriteExt, task::JoinHandle};
 use x_win::WindowInfo;
 
-use tokio::{io::AsyncWriteExt, task::JoinHandle};
+mod heatmap;
 
-use crate::listener;
+/// (See its counterpart [`ProgramDisplayName`])
+///
+/// The name of a program derived from system-level data.
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct RawProgramName(pub String);
+
+/// (See its counterpart [`RawProgramName`])
+///
+/// The display name the *user* has chosen for a program, which maps from a [`RawProgramName`]. Notably, users are allowed to merge programs by setting the same [`ProgramDisplayName`] for a corresponding [`RawProgramName`].
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct ProgramDisplayName(pub String);
 
 #[derive(Debug)]
 pub struct App {
-  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<String, HashMap<rdev::Key, u32>>>,
+  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<RawProgramName, HashMap<rdev::Key, u32>>>,
 
   /// The key is the raw program name, as stored in [`Self::key_buckets`]. The value is the display name the *user* has chosen to represent that program. If multiple programs map to an identical display name, they are treated as the same program in data analysis.
-  program_names: HashMap<String, String>,
+  program_names: HashMap<RawProgramName, ProgramDisplayName>,
 }
 impl App {
   fn as_persistent(&self) -> AppPersistent {
@@ -66,8 +76,8 @@ pub enum Message {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppPersistent {
-  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<String, HashMap<rdev::Key, u32>>>,
-  program_names: HashMap<String, String>,
+  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<RawProgramName, HashMap<rdev::Key, u32>>>,
+  program_names: HashMap<RawProgramName, ProgramDisplayName>,
 }
 
 impl App {
@@ -106,11 +116,11 @@ impl App {
             .key_buckets
             .entry(time_now)
             .or_default()
-            .entry(format!(
+            .entry(RawProgramName(format!(
               "{} - {}",
               active_window.info.exec_name.clone(),
               active_window.info.name.clone()
-            ))
+            )))
             .or_default()
             .entry(occurrence.0)
             .or_default() += occurrence.1;
@@ -192,7 +202,7 @@ impl App {
   }
 
   /// Returns all programs seen by the key tracker
-  fn known_programs(&self) -> HashSet<&String> {
+  fn known_programs(&self) -> HashSet<&RawProgramName> {
     let mut programs = HashSet::new();
 
     for time_bucket in &self.key_buckets {
