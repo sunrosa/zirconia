@@ -1,4 +1,5 @@
 use crate::listener;
+use crate::newtype_macro::{integer_newtypes, string_newtypes};
 use crate::{app::heatmap::keyboard, prelude::*};
 use chrono::{DateTime, Timelike, Utc};
 use iced::{
@@ -20,21 +21,26 @@ use x_win::WindowInfo;
 
 mod heatmap;
 
-/// (See its counterpart [`ProgramDisplayName`])
-///
-/// The name of a program derived from system-level data.
-#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-pub struct RawProgramName(pub String);
+string_newtypes![
+  /// (See its counterpart [`ProgramDisplayName`])
+  ///
+  /// The name of a program derived from system-level data.
+  RawProgramName,
 
-/// (See its counterpart [`RawProgramName`])
-///
-/// The display name the *user* has chosen for a program, which maps from a [`RawProgramName`]. Notably, users are allowed to merge programs by setting the same [`ProgramDisplayName`] for a corresponding [`RawProgramName`].
-#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-pub struct ProgramDisplayName(pub String);
+  /// (See its counterpart [`RawProgramName`])
+  ///
+  /// The display name the *user* has chosen for a program, which maps from a [`RawProgramName`]. Notably, users are allowed to merge programs by setting the same [`ProgramDisplayName`] for a corresponding [`RawProgramName`].
+  ProgramDisplayName,
+];
+
+integer_newtypes![
+  /// How many times a key has been pressed
+  PressCount(u32)
+];
 
 #[derive(Debug)]
 pub struct App {
-  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<RawProgramName, HashMap<rdev::Key, u32>>>,
+  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<RawProgramName, HashMap<rdev::Key, PressCount>>>,
 
   /// The key is the raw program name, as stored in [`Self::key_buckets`]. The value is the display name the *user* has chosen to represent that program. If multiple programs map to an identical display name, they are treated as the same program in data analysis.
   program_names: HashMap<RawProgramName, ProgramDisplayName>,
@@ -67,7 +73,7 @@ impl Default for App {
 #[derive(Debug, Clone)]
 pub enum Message {
   KeyboardEvents {
-    key_occurrences: HashMap<rdev::Key, u32>,
+    key_occurrences: HashMap<rdev::Key, PressCount>,
     active_window: WindowInfo,
   },
   AutosaveNow,
@@ -76,7 +82,7 @@ pub enum Message {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppPersistent {
-  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<RawProgramName, HashMap<rdev::Key, u32>>>,
+  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<RawProgramName, HashMap<rdev::Key, PressCount>>>,
   program_names: HashMap<RawProgramName, ProgramDisplayName>,
 }
 
@@ -151,7 +157,7 @@ impl App {
         for key in sorted_keys {
           formatted_text += &format!("        {:?}: {}\n", key.0, key.1);
 
-          *keypresses.entry(*key.0).or_default() += key.1;
+          *keypresses.entry(*key.0).or_default() += *key.1;
         }
       }
     }

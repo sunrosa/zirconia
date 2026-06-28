@@ -22,6 +22,7 @@ use crate::app::{App, Message};
 mod app;
 mod listener;
 mod math;
+mod newtype_macro;
 
 #[instrument(skip_all, level = Level::INFO)]
 fn main() {

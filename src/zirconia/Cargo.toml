@@ -24,3 +24,4 @@ tracing-log.workspace = true
 palette.workspace = true
 libm.workspace = true
 num-traits.workspace = true
+derive_more = { workspace = true, features = ["add", "add_assign", "as_ref", "deref", "deref_mut", "display", "from", "mul", "mul_assign", "not"] }

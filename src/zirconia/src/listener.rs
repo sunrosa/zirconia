@@ -1,6 +1,6 @@
 use std::{any::Any, collections::HashMap, hint::black_box, io::ErrorKind, ops::ControlFlow, time::Duration};
 
-use crate::{app::Message, prelude::*};
+use crate::{app::{Message, PressCount}, prelude::*};
 
 use iced::{Task, futures::SinkExt, stream};
 use kanal::{Receiver, Sender};
@@ -32,7 +32,7 @@ pub fn task_run(interval: Duration) -> Task<Message> {
       // NOTE Instead of awaiting on a timer like this, we can instead await receiving an event, and THEN sleep after it's processed. That means the first keypress gets immediately processed, while the following keys are processed next iteration, though maybe that's worse. Currently it's completely out-of-sync to keypresses.
       time::sleep(interval).await;
 
-      let mut key_occurrences: HashMap<rdev::Key, u32> = HashMap::new();
+      let mut key_occurrences: HashMap<rdev::Key, PressCount> = HashMap::new();
 
       // No events are sent up to the UI unless new events are present.
       if !event_receiver.is_empty() {
@@ -40,7 +40,7 @@ pub fn task_run(interval: Duration) -> Task<Message> {
 
         for event in &received_events {
           if let EventType::KeyPress(key) = event.event_type {
-            *key_occurrences.entry(key).or_default() += 1;
+            *key_occurrences.entry(key).or_default() += PressCount(1);
           }
         }
 
