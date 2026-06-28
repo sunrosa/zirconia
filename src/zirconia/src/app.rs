@@ -25,17 +25,22 @@ use crate::listener;
 #[derive(Debug)]
 pub struct App {
   key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<String, HashMap<rdev::Key, u32>>>,
+
+  /// The key is the raw program name, as stored in [`Self::key_buckets`]. The value is the display name the *user* has chosen to represent that program. If multiple programs map to an identical display name, they are treated as the same program in data analysis.
+  program_names: HashMap<String, String>,
 }
 impl App {
   fn as_persistent(&self) -> AppPersistent {
     AppPersistent {
       key_buckets: self.key_buckets.clone(),
+      program_names: self.program_names.clone(),
     }
   }
 
   fn from_persistent(persistent: AppPersistent) -> Self {
     Self {
       key_buckets: persistent.key_buckets,
+      program_names: persistent.program_names,
     }
   }
 }
@@ -44,6 +49,7 @@ impl Default for App {
   fn default() -> Self {
     Self {
       key_buckets: Default::default(),
+      program_names: Default::default(),
     }
   }
 }
@@ -61,6 +67,7 @@ pub enum Message {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppPersistent {
   key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<String, HashMap<rdev::Key, u32>>>,
+  program_names: HashMap<String, String>,
 }
 
 impl App {
@@ -182,6 +189,19 @@ impl App {
 
     // Then close the iced app and runtime
     self.save().chain(iced::exit())
+  }
+
+  /// Returns all programs seen by the key tracker
+  fn known_programs(&self) -> HashSet<&String> {
+    let mut programs = HashSet::new();
+
+    for time_bucket in &self.key_buckets {
+      for program_bucket in time_bucket.1 {
+        programs.insert(program_bucket.0);
+      }
+    }
+
+    programs
   }
 }
 
