@@ -18,6 +18,7 @@
           libXrandr
           libxkbcommon
           libxcb
+          vulkan-loader
         ];
 
         # This makes the dynamically loaded libraries discoverable at runtime
