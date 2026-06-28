@@ -14,7 +14,7 @@ use crate::prelude::*;
 
 use iced::widget::{column, row};
 
-static KEY_SPACING: f32 = 2.;
+static KEY_SPACING: f32 = 1.;
 
 #[instrument(skip_all, level = Level::DEBUG)]
 pub fn keyboard<'a>(key_data: &'_ HashMap<rdev::Key, u32>) -> Element<'a, Message> {
@@ -565,7 +565,7 @@ fn keycap<'a>(label: &'a str, width: Length, times_pressed: u32, total_pressed: 
       let default_style = container::rounded_box(theme);
       container::Style {
         border: Border {
-          width: 3.,
+          width: 1.,
           radius: 5.0.into(),
           ..default_style.border
         },
@@ -584,7 +584,8 @@ fn keycap<'a>(label: &'a str, width: Length, times_pressed: u32, total_pressed: 
   .padding(Padding {
     left: KEY_SPACING / 2.,
     right: KEY_SPACING / 2.,
-    ..Default::default()
+    top: 0.,
+    bottom: 0.,
   })
   .into()
 }

@@ -16,13 +16,14 @@ use rdev::Key;
 use serde::{Deserialize, Serialize};
 use x_win::WindowInfo;
 
-use tokio::io::AsyncWriteExt;
+use tokio::{io::AsyncWriteExt, task::JoinHandle};
 
 use crate::listener;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct App {
   key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<String, HashMap<rdev::Key, u32>>>,
+  listener_handle: Option<JoinHandle<()>>,
 }
 impl App {
   fn as_persistent(&self) -> AppPersistent {
@@ -34,6 +35,16 @@ impl App {
   fn from_persistent(persistent: AppPersistent) -> Self {
     Self {
       key_buckets: persistent.key_buckets,
+      listener_handle: None,
+    }
+  }
+}
+
+impl Default for App {
+  fn default() -> Self {
+    Self {
+      key_buckets: Default::default(),
+      listener_handle: Default::default(),
     }
   }
 }
@@ -59,12 +70,12 @@ impl App {
     let app = if let Ok(file) = std::fs::File::open("save.ron") {
       App::from_persistent(ron::de::from_reader(file).unwrap())
     } else {
-      Self {
-        key_buckets: Default::default(),
-      }
+      Self::default()
     };
 
-    let task = Task::batch([listener::task_run(Duration::from_secs(1)), autosave_signal()]);
+    let (listener_task, listener_handle) = listener::task_run(Duration::from_secs(1));
+
+    let task = Task::batch([listener_task, autosave_signal()]);
 
     (app, task)
   }
@@ -156,6 +167,12 @@ impl App {
 
   #[instrument(skip_all, level = Level::INFO)]
   fn close(&self) -> Task<Message> {
+    info!("saving and closing app now!");
+
+    // Close the listener thread (THIS DOESN'T WORK BECAUSE BLOCKING THREADS CAN'T BE ABORTED)
+    // self.listener_handle.as_ref().map(|x| x.abort());
+
+    // Then close the iced app and runtime
     self.save().chain(iced::exit())
   }
 }

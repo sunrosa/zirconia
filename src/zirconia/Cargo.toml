@@ -12,7 +12,7 @@ no_std_io2.workspace = true
 rdev = { workspace = true, features = ["serde", "serialize"] }
 ron.workspace = true
 serde = { workspace = true, features = ["derive"] }
-tokio = { workspace = true, features = ["fs", "io-util", "time"] }
+tokio = { workspace = true, features = ["fs", "io-util", "time", "rt"] }
 tracing = { workspace = true, features = [
   "max_level_trace",
   "release_max_level_info",

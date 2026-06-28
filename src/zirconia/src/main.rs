@@ -25,9 +25,15 @@ fn main() {
   tracing::subscriber::set_global_default(tracing_subscriber::registry().with(tracing_tracy::TracyLayer::default()))
     .expect("setting up tracy layer");
 
-  tracing_log::LogTracer::init().unwrap();
+  // tracing_log::LogTracer::init().unwrap();
 
   iced::application(App::boot, App::update, App::view)
+    .title("Zirconia")
+    .window(window::Settings {
+      fullscreen: false,
+      exit_on_close_request: false,
+      ..Default::default()
+    })
     .subscription(subscriptions)
     .run()
     .unwrap();
@@ -36,7 +42,12 @@ fn main() {
 #[instrument(skip_all, level = Level::TRACE)]
 fn subscriptions(state: &App) -> Subscription<Message> {
   Subscription::batch([
-    window::close_requests().map(|_| Message::CloseApp),
-    window::close_events().map(|_| Message::CloseApp),
+    window::close_requests().map(|id| {
+      debug!("close request received to close window of ID {id:?}");
+      Message::CloseApp
+    }),
+    window::close_events().map(|id| {
+      debug!("close event received for window of ID {id:?}");
+      Message::CloseApp}),
   ])
 }
