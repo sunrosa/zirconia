@@ -4,9 +4,7 @@ use iced::{
   Background, Border, Color, Element, Length, Padding,
   alignment::Vertical,
   widget::{
-    Container, container,
-    grid::{self, Sizing},
-    responsive, text,
+    Container, Responsive, container, grid::{self, Sizing}, responsive, text
   },
 };
 
@@ -17,7 +15,7 @@ use iced::widget::{column, row};
 static KEY_SPACING: f32 = 1.;
 
 #[instrument(skip_all, level = Level::DEBUG)]
-pub fn keyboard<'a>(key_data: &'_ HashMap<rdev::Key, u32>) -> Element<'a, Message> {
+pub fn keyboard<'a>(key_data: &'_ HashMap<rdev::Key, u32>) -> Responsive<'a, Message> {
   use Length::*;
   use rdev::Key::*;
 

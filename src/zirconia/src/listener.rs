@@ -19,8 +19,8 @@ pub fn task_run(interval: Duration) -> Task<Message> {
   // This inner channel (the kanal channel) receives messages for EVERY key event.
   let (event_sender, event_receiver) = kanal::unbounded::<Event>();
 
-  // The listener sends messages from a blocking thread, as rdev doesn't have an asynchronous API.
-  debug!("spawning a blocking thread via tokio's threadpool to listen to key events");
+  // The listener sends messages from a blocking thread. Do NOT use a tokio thread for this (even a tokio blocking thread), it will lock up the program forever.
+  debug!("spawning a blocking os thread to listen to key events");
   std::thread::spawn(move || listener_thread(event_sender));
 
   // The outer channel (stream channel) only sends messages at [`interval`], to keep the UI thread from updating every global keystroke.

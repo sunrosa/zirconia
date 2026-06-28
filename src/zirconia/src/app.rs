@@ -9,8 +9,9 @@ use std::{
 use chrono::{DateTime, Timelike, Utc};
 use iced::{
   Element, Length, Size, Task,
+  alignment::Horizontal,
   futures::SinkExt,
-  widget::{column, row, scrollable, text},
+  widget::{column, container, row, scrollable, text},
 };
 use kanal::{Receiver, Sender};
 use rdev::Key;
@@ -137,7 +138,18 @@ impl App {
       }
     }
 
-    scrollable(column![keyboard(&keypresses), text(formatted_text)].width(Length::Fill)).into()
+    // FIXME alignment isn't working. I think the responsive needs to be moved outside the container or some shit. I'm tired good night.
+    column![
+      container(keyboard(&keypresses).height(Length::Fill).width(Length::Fill))
+        .center_x(Length::Fill)
+        .height(Length::FillPortion(100)),
+      scrollable(text(formatted_text))
+        .height(Length::FillPortion(100))
+        .width(Length::Fill)
+    ]
+    .height(Length::Fill)
+    .width(Length::Fill)
+    .into()
   }
 
   #[instrument(skip_all, level = Level::DEBUG)]
