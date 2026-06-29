@@ -62,8 +62,6 @@ pub fn task_run(interval: Duration) -> Task<Message> {
 
         let active_layout = get_layout();
 
-        panic!("TEST");
-
         output
           .send(Message::KeyboardEvents {
             key_occurrences,

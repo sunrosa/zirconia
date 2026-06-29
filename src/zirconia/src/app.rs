@@ -164,8 +164,7 @@ impl App {
       NewCriticalThread(new_thread_handle) => self.critical_threads.push(Some(new_thread_handle)),
       CheckCriticalThreads => {
         for critical_thread in &mut self.critical_threads {
-          eprintln!("critical thread debug: {critical_thread:?}");
-          if dbg!(critical_thread.as_ref().is_some_and(|x| x.is_finished())) {
+          if critical_thread.as_ref().is_some_and(|x| x.is_finished()) {
             let result = critical_thread.take().unwrap().join();
             error!("critical thread stopped: {result:?}");
             eprintln!("critical thread stopped: {result:?}");
