@@ -7,6 +7,7 @@
 //! - Integrate with wakapi
 //! - Integrate with MIDI keyboards
 //! - Integrate with system keyboard layout detection, to record how users type in different languages and layouts
+//! - Integrate with web browers to see what tab is open (optional, off by default and enabled for specific tabs). Useful for tracking things like Monkeytype.
 
 #![allow(unused_imports, dead_code)]
 

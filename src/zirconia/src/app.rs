@@ -1,3 +1,4 @@
+use crate::app::bucket::{Bucket, BucketKind};
 use crate::listener;
 use crate::newtype_macro::{integer_newtypes, string_newtypes};
 use crate::{app::heatmap::keyboard, prelude::*};
@@ -19,6 +20,7 @@ use std::{
 use tokio::{io::AsyncWriteExt, task::JoinHandle};
 use x_win::WindowInfo;
 
+mod bucket;
 mod heatmap;
 
 string_newtypes![
@@ -38,9 +40,13 @@ integer_newtypes![
   PressCount(u32)
 ];
 
+/// Follows SemVer! Since it's a schema, it starts out at `1.0.0` because breaking changes immediately matter, and migrations will need to be written.
+static SCHEMA_VERSION: &'static str = "1.0.0";
+
 #[derive(Debug)]
 pub struct App {
-  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<RawProgramName, HashMap<rdev::Key, PressCount>>>,
+  /// Keypress data
+  key_buckets: BTreeMap<DateTime<Utc>, HashMap<BucketKind, Bucket>>,
 
   /// The key is the raw program name, as stored in [`Self::key_buckets`]. The value is the display name the *user* has chosen to represent that program. If multiple programs map to an identical display name, they are treated as the same program in data analysis.
   program_names: HashMap<RawProgramName, ProgramDisplayName>,
@@ -48,6 +54,7 @@ pub struct App {
 impl App {
   fn as_persistent(&self) -> AppPersistent {
     AppPersistent {
+      schema_version: SCHEMA_VERSION,
       key_buckets: self.key_buckets.clone(),
       program_names: self.program_names.clone(),
     }
@@ -82,7 +89,8 @@ pub enum Message {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppPersistent {
-  key_buckets: BTreeMap<DateTime<Utc>, BTreeMap<RawProgramName, HashMap<rdev::Key, PressCount>>>,
+  schema_version: &'static str,
+  key_buckets: BTreeMap<DateTime<Utc>, HashMap<BucketKind, Bucket>>,
   program_names: HashMap<RawProgramName, ProgramDisplayName>,
 }
 
@@ -122,12 +130,13 @@ impl App {
             .key_buckets
             .entry(time_now)
             .or_default()
-            .entry(RawProgramName(format!(
+            .entry(BucketKind::new(RawProgramName(format!(
               "{} - {}",
               active_window.info.exec_name.clone(),
               active_window.info.name.clone()
-            )))
+            ))))
             .or_default()
+            .events
             .entry(occurrence.0)
             .or_default() += occurrence.1;
         }
@@ -151,7 +160,7 @@ impl App {
       for program in time_bucket.1 {
         formatted_text += &format!("    {:?}\n", program.0);
 
-        let mut sorted_keys: Vec<_> = program.1.into_iter().collect();
+        let mut sorted_keys: Vec<_> = program.1.events.iter().collect();
         sorted_keys.sort_by(|a, b| b.1.cmp(a.1));
 
         for key in sorted_keys {
@@ -208,7 +217,7 @@ impl App {
   }
 
   /// Returns all programs seen by the key tracker
-  fn known_programs(&self) -> HashSet<&RawProgramName> {
+  fn known_bucketkinds(&self) -> HashSet<&BucketKind> {
     let mut programs = HashSet::new();
 
     for time_bucket in &self.key_buckets {

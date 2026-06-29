@@ -25,6 +25,18 @@ pub fn keyboard<'a>(key_data: &'_ HashMap<rdev::Key, PressCount>) -> Responsive<
 
   let key_data = key_data.clone();
 
+  // TODO Continue applying this macro. I'm too lazy to do it right now.
+  macro_rules! key {
+    ($label:tt, $portion:tt, $variant:ident) => {
+      keycap(
+        $label,
+        FillPortion($portion),
+        *key_data.get(&$variant).unwrap_or(&PressCount::default()),
+        total_keypresses,
+      )
+    };
+  }
+
   responsive(move |size| {
     let aspect_ratio = 2.8 / 1.0;
 
@@ -33,108 +45,23 @@ pub fn keyboard<'a>(key_data: &'_ HashMap<rdev::Key, PressCount>) -> Responsive<
     column![
       row![
         // Total irrelevant
-        keycap(
-          "Esc",
-          FillPortion(150),
-          *key_data.get(&Escape).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F1",
-          FillPortion(100),
-          *key_data.get(&F1).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F2",
-          FillPortion(100),
-          *key_data.get(&F2).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F3",
-          FillPortion(100),
-          *key_data.get(&F3).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F4",
-          FillPortion(100),
-          *key_data.get(&F4).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F5",
-          FillPortion(100),
-          *key_data.get(&F5).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F6",
-          FillPortion(100),
-          *key_data.get(&F6).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F7",
-          FillPortion(100),
-          *key_data.get(&F7).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F8",
-          FillPortion(100),
-          *key_data.get(&F8).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F9",
-          FillPortion(100),
-          *key_data.get(&F9).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F10",
-          FillPortion(100),
-          *key_data.get(&F10).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F11",
-          FillPortion(100),
-          *key_data.get(&F11).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "F12",
-          FillPortion(100),
-          *key_data.get(&F12).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "Home",
-          FillPortion(100),
-          *key_data.get(&Home).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "End",
-          FillPortion(100),
-          *key_data.get(&End).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "Insert",
-          FillPortion(100),
-          *key_data.get(&Insert).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
-        keycap(
-          "Delete",
-          FillPortion(150),
-          *key_data.get(&Delete).unwrap_or(&PressCount::default()),
-          total_keypresses
-        ),
+        key!("Esc", 150, Escape),
+        key!("F1", 150, F1),
+        key!("F2", 100, F2),
+        key!("F3", 100, F3),
+        key!("F4", 100, F4),
+        key!("F5", 100, F5),
+        key!("F6", 100, F6),
+        key!("F7", 100, F7),
+        key!("F8", 100, F8),
+        key!("F9", 100, F9),
+        key!("F10", 100, F10),
+        key!("F11", 100, F11),
+        key!("F12", 100, F12),
+        key!("Home", 100, Home),
+        key!("End", 100, End),
+        key!("Insert", 100, Insert),
+        key!("Delete", 150, Delete),
       ]
       .height(FillPortion(60)),
       row![
