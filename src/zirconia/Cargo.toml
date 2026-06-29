@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-iced = { workspace = true, features = ["debug", "tokio", "x11", "time-travel"] }
+iced = { workspace = true, features = ["debug", "tokio", "x11"] }
 # iced_comet = { workspace = true }
 chrono = { workspace = true, features = ["serde"] }
 kanal.workspace = true
